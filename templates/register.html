@@ -1,24 +1,44 @@
 <html>
 <head>
+    <!-- Display if Python passes an error message -->
+{% if error %}
+    <div style="color: red; background-color: #ffe6e6; padding: 10px; margin-bottom: 15px; border: 1px solid red;">
+        {{ error }}
+    </div>
+{% endif %}
+
+<!-- Display the flash message if it exists -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="color: #155724; background-color: #d4edda; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
+        {{ message }}
+    </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %} 
     <h1> User Registration Form</h1>
+    
 </head>
-<body></body>
+<body>
+
+<hr>
 <li>Please enter your full name.</li>
     <li>Username must contain only letters, numbers, and underscores. No special characters are allowed</li>
     <li>Password must be at least 8 characters long and include both letters and numbers.</li>   
 <hr>
     <form method="POST">
     <label>Full Name:</label>
-    <input type="text" name="fullname"><br><br>
+    <input type="text" id="fullname" name="fullname" value="{{ fullname if fullname }}"><br><br>
 
     <label>Username:</label>
-    <input type="text" name="username"><br><br>
+    <input type="text" id="username" name="username" value="{{ username if username }}"><br><br>
 
     <label>Password:</label>
-    <input type="text" name="password"><br><br>
+    <input type="text" id="password" name="password"><br><br>
 
     <label>Confirm Password:</label>
-    <input type="text" name="confirm_password"><br><br>
+    <input type="text" id="confirm_password" name="confirm_password"><br><br>
 
     <button type="submit">Register</button>
     <button type="button" class="btn btn-primary" onclick="history.back()">Back</button>

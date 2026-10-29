@@ -61,7 +61,52 @@ def register():
             confirm_password = request.form["confirm_password"].strip()  # strip extra spaces
 
             #TODO Input validation
+            # Validate fullname
+            # Check if full name is empty; has a space between first and last. 
+            if not fullname:
+                return render_template("register.html",
+                                       error="Name cannot be empty.", fullname=fullname, username=username)
+            if " " not in fullname:
+                return render_template("register.html",
+                                       error="Please enter first name, space, last name (example: Britt James).", fullname=fullname, username=username)
+            # Remove allowed characters (space); then validate remaining characters
+            cleaned_name = fullname.replace(" ", "")
+            if not cleaned_name.isalnum():
+                return render_template("register.html",
+                                       error="Name cannot contain special characters (except a space between first and last names).", fullname=fullname, username=username)
 
+            # Validate username
+            # Check if user name is empty; only letters and numbers accepted
+            if not username:
+                return render_template("register.html",
+                                       error="Username cannot be empty.\nUsername must contain only letters, numbers, and underscores. No special characters are allowed", fullname=fullname, username=username)
+            # Remove allowed characters (underscore); then validate remaining characters
+            cleaned_username = username.replace("_", "")
+            if not cleaned_username.isalnum():
+                return render_template("register.html",
+                                       error="Username must contain only letters, numbers, and underscores. No special characters are allowed.", fullname=fullname, username=username)
+
+            # Validate password
+            # Check if at least 8 characters long; must include at least 1 letter and 1 number.
+            if len(password) < 8:
+                return render_template("register.html",
+                                       error="Password must be at least 8 characters long and include both letters and numbers.", fullname=fullname, username=username)
+            
+            # Check for at least one letter
+            if not any(char.isalpha() for char in password):
+                return render_template("register.html",
+                                       error="Password must contain at least one letter.", fullname=fullname, username=username)
+            # Check for at least one number
+            if not any(char.isdigit() for char in password):
+                return render_template("register.html",
+                                       error="Password must contain at least one number.", fullname=fullname, username=username)
+
+            
+            # Validate confirm password
+            if not confirm_password == password:
+                return render_template("register.html",
+                                                       error="Password do not match.", fullname=fullname, username=username)
+            
             # Once data is validated, write to the database
             conn = get_db()
             conn.execute("""
@@ -70,6 +115,8 @@ def register():
                 """, (fullname, username, password, confirm_password))
             conn.commit()
             # TODO Display success message
+            # Display success message
+            flash(f"Success! Added {fullname} to the database.", "success")
             
             # Send user back to the Add Items page
             return redirect(url_for("register")) 
