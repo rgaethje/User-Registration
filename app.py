@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, g, redirect, flash, url_for
 import sqlite3
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'
+
+bcrypt = Bcrypt(app)
 
 DATABASE = "users.db"
 
@@ -101,22 +104,27 @@ def register():
                 return render_template("register.html",
                                        error="Password must contain at least one number.", fullname=fullname, username=username)
 
+            # Once validated hash password
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
             
             # Validate confirm password
-            if not confirm_password == password:
+            if not bcrypt.check_password_hash(hashed_password, confirm_password):
                 return render_template("register.html",
-                                                       error="Password do not match.", fullname=fullname, username=username)
+                                       error="Password do not match.", fullname=fullname, username=username)
+            
             
             # Once data is validated, write to the database
             conn = get_db()
             conn.execute("""
                 INSERT INTO users (fullname, username, password, confirm_password)
                 VALUES (?, ?, ?, ?)
-                """, (fullname, username, password, confirm_password))
+                """, (fullname, username, hashed_password, confirm_password))
             conn.commit()
             # TODO Display success message
             # Display success message
-            flash(f"Success! Added {fullname} to the database.", "success")
+            flash(f"Success! {fullname} ({username}) has been added to the database.")
+            flash(f"Password hashed for privacy and security: {hashed_password}")
+                  
             
             # Send user back to the Add Items page
             return redirect(url_for("register")) 
